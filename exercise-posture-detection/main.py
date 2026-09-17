@@ -196,47 +196,6 @@ def draw_hud(frame, count, state, feedback, feedback_color):
     return frame
 
 
-def draw_pose(frame, person, confidences, feedback_color, threshold=0.55):
-    height, width = frame.shape[:2]
-    visible = {}
-    error_active = feedback_color[2] > 180 and feedback_color[1] < 120
-    if error_active:
-        pose_color = (70, 80, 240)
-    elif state == STATE_DOWN:
-        pose_color = (0, 185, 255)
-    elif state == STATE_UP:
-        pose_color = (75, 220, 135)
-    else:
-        pose_color = (220, 205, 60)
-
-    for index, (x, y) in enumerate(person):
-        confidence = confidences[index] if index < len(confidences) else 1.0
-        point = (int(x), int(y))
-        inside_frame = 0 <= point[0] < width and 0 <= point[1] < height
-        visible[index] = confidence >= threshold and inside_frame
-
-    for start_idx, end_idx in connections:
-        if not (visible.get(start_idx, False) and visible.get(end_idx, False)):
-            continue
-
-        start = tuple(int(value) for value in person[start_idx])
-        end = tuple(int(value) for value in person[end_idx])
-        cv2.line(frame, start, end, (12, 28, 36), 8, cv2.LINE_AA)
-        cv2.line(frame, start, end, pose_color, 3, cv2.LINE_AA)
-
-    for index, (x, y) in enumerate(person):
-        if not visible.get(index, False):
-            continue
-
-        point = (int(x), int(y))
-        joint_color = (255, 220, 90) if index in (11, 12, 13, 14) else pose_color
-        cv2.circle(frame, point, 8, (12, 28, 36), -1, cv2.LINE_AA)
-        cv2.circle(frame, point, 4, joint_color, -1, cv2.LINE_AA)
-
-    cv2.putText(frame, "POSE TRACKING", (20, 118),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.55, pose_color, 1, cv2.LINE_AA)
-
-
 # ==========================================
 # Main Loop
 # ==========================================
@@ -273,13 +232,8 @@ while True:
             continue
 
         keypoints = result.keypoints.xy.cpu().numpy()
-        keypoint_confidences = (
-            result.keypoints.conf.cpu().numpy()
-            if result.keypoints.conf is not None
-            else np.ones(keypoints.shape[:2])
-        )
 
-        for person_index, person in enumerate(keypoints):
+        for person in keypoints:
 
             if len(person) < 17:
                 continue
@@ -410,7 +364,20 @@ while True:
             # Draw Skeleton
             # ============================================================
 
-            draw_pose(frame, person, keypoint_confidences[person_index], feedback_color)
+            for x, y in person:
+                if x > 0 and y > 0:
+                    cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+
+            for start_idx, end_idx in connections:
+                if start_idx >= len(person) or end_idx >= len(person):
+                    continue
+                x1, y1 = person[start_idx]
+                x2, y2 = person[end_idx]
+                if x1 > 0 and y1 > 0 and x2 > 0 and y2 > 0:
+                    cv2.line(frame,
+                             (int(x1), int(y1)),
+                             (int(x2), int(y2)),
+                             (255, 255, 255), 2)
 
             # Only process the first person detected
             break

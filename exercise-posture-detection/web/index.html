@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitAI — Sports & Fitness</title>
+  <meta name="description" content="AI-powered sports and fitness tracking with live exercise detection, form analysis, and personalized recommendations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar Nav -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">⚡</div>
+        <span class="brand-name">FitAI</span>
+      </div>
+      <ul class="sidebar-nav">
+        <li class="nav-item active" data-page="dashboard" id="nav-dashboard">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Dashboard</span>
+        </li>
+        <li class="nav-item" data-page="workout" id="nav-workout">
+          <span class="nav-icon">🏋️</span>
+          <span class="nav-label">Workout</span>
+        </li>
+        <li class="nav-item" data-page="history" id="nav-history">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">History</span>
+        </li>
+        <li class="nav-item" data-page="profile" id="nav-profile">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">Profile</span>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">A</div>
+          <div class="user-info">
+            <span class="user-name">Athlete</span>
+            <span class="user-level">Pro Member</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Top Bar -->
+    <header class="topbar" id="topbar">
+      <button class="menu-btn" id="menu-btn">☰</button>
+      <div class="topbar-brand">
+        <span class="brand-icon-sm">⚡</span>
+        FitAI
+      </div>
+      <div style="width:40px"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+      <!-- Pages are injected here by JS -->
+    </main>
+  </div>
+
+  <!--
+    MediaPipe Tasks Vision (browser WASM, client-side only — no frame upload to server).
+    The module exposes PoseLandmarker and FilesetResolver on window.MediaPipeTasksVision.
+  -->
+  <script>
+    // Load MediaPipe Tasks Vision from CDN and expose on window.
+    // We use a dynamic import so we can assign it to the global before our app module runs.
+    (async () => {
+      try {
+        const mp = await import(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm'
+        );
+        window.MediaPipeTasksVision = mp;
+      } catch (e) {
+        console.error('Failed to load MediaPipe Tasks Vision:', e);
+        window.MediaPipeTasksVision = null;
+      }
+    })();
+  </script>
+
+  <!-- App (ES module — runs after MediaPipe polyfill is in flight) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
